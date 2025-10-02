@@ -9,7 +9,6 @@ import config.RestSecurityConfig;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -18,7 +17,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import rewards.internal.account.Account;
 
-import java.util.Arrays;
+
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -55,7 +54,6 @@ class AccountControllerTests {
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(roles = {"USER"})
 	void accountDetails_with_USER_role_should_return_200() throws Exception {
 
@@ -74,7 +72,6 @@ class AccountControllerTests {
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(username = "user", password = "user")
 	void accountDetails_with_user_credentials_should_return_200() throws Exception {
 
@@ -93,7 +90,6 @@ class AccountControllerTests {
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(username = "admin", password = "admin")
 	void accountDetails_with_admin_credentials_should_return_200() throws Exception {
 
@@ -112,7 +108,6 @@ class AccountControllerTests {
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(username = "superadmin", password = "superadmin")
 	void accountDetails_with_superadmin_credentials_should_return_200() throws Exception {
 
@@ -132,7 +127,6 @@ class AccountControllerTests {
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(roles = {"USER"})
 	void accountDetailsFail_test_with_USER_role_should_proceed_successfully() throws Exception {
 
@@ -147,7 +141,6 @@ class AccountControllerTests {
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(roles = {"ADMIN"})
 	void accountSummary_with_ADMIN_role_should_return_200() throws Exception {
 
@@ -165,7 +158,6 @@ class AccountControllerTests {
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(roles = {"ADMIN", "SUPERADMIN"})
 	void createAccount_with_ADMIN_or_SUPERADMIN_role_should_return_201() throws Exception {
 
@@ -191,14 +183,20 @@ class AccountControllerTests {
 	//    this testing because security failure will prevent
 	//    calling a method of a dependency.)
 	@Test
-	void createAccount_with_USER_role_should_return_403() {
+    @WithMockUser(roles = {"USER"})
+    void createAccount_with_USER_role_should_return_403() throws Exception {
 
+        Account testAccount = new Account("1234512345", "Mary Jones");
+        testAccount.setEntityId(21L);
+        given(accountManager.save(any(Account.class))).willReturn(testAccount);
 
-
+        mockMvc.perform(post("/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(testAccount)))
+                .andExpect(status().isForbidden());
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(roles = {"SUPERADMIN"})
 	void getBeneficiary_with_SUPERADMIN_role_should_return_200() throws Exception {
 
@@ -216,7 +214,6 @@ class AccountControllerTests {
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(roles = {"ADMIN", "SUPERADMIN"})
 	void addBeneficiary_with_ADMIN_or_SUPERADMIN_role_should_return_201() throws Exception {
 
@@ -226,7 +223,6 @@ class AccountControllerTests {
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(roles = {"USER"})
 	void addBeneficiary_with_USER_role_should_return_403() throws Exception {
 
@@ -235,7 +231,6 @@ class AccountControllerTests {
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(roles = {"SUPERADMIN"})
 	void removeBeneficiary_with_SUPERADMIN_role_should_return_204() throws Exception {
 
@@ -251,7 +246,6 @@ class AccountControllerTests {
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(roles = {"USER", "ADMIN"})
 	void removeBeneficiary_with_USER_or_ADMIN_role_should_return_403() throws Exception {
 
@@ -265,7 +259,6 @@ class AccountControllerTests {
     }
 
 	@Test
-	@Disabled
 	@WithMockUser(roles = {"SUPERADMIN"})
 	void removeBeneficiaryFail_test_with_SUPERADMIN_role_should_proceed_successfully() throws Exception {
         Account account = new Account("1234567890", "John Doe");

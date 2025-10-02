@@ -45,7 +45,6 @@ class AccountControllerCustomUserDetailsServiceTests {
     private AccountService accountService;
 
 	@Test
-	@Disabled
 	@WithUserDetails("joe")
 	void accountDetails_with_joe_credentials_should_return_200() throws Exception {
 
@@ -63,7 +62,6 @@ class AccountControllerCustomUserDetailsServiceTests {
     }
 
 	@Test
-	@Disabled
 	@WithUserDetails("mary")
 	void accountDetails_with_mary_credentials_should_return_200() throws Exception {
 

@@ -33,7 +33,6 @@ class AccountClientTests {
     private final Random random = new Random();
 
 	@Test
-	@Disabled
 	void listAccounts_using_invalid_user_should_return_401() {
         ResponseEntity<String> responseEntity
                 = restTemplate.withBasicAuth("invalid", "invalid")
@@ -42,7 +41,6 @@ class AccountClientTests {
     }
 
 	@Test
-	@Disabled
 	void listAccounts_using_valid_user_should_succeed() {
         String url = "/accounts";
         // we have to use Account[] instead of List<Account>, or Jackson won't know what type to unmarshal to
@@ -58,7 +56,6 @@ class AccountClientTests {
     }
 
 	@Test
-	@Disabled
 	void listAccounts_using_valid_admin_should_succeed() {
         String url = "/accounts";
         // we have to use Account[] instead of List<Account>, or Jackson won't know what type to unmarshal to
@@ -74,7 +71,6 @@ class AccountClientTests {
     }
 
 	@Test
-	@Disabled
 	void getAccount_using_valid_user_should_succeed() {
         String url = "/accounts/{accountId}";
         ResponseEntity<Account> responseEntity
@@ -88,7 +84,6 @@ class AccountClientTests {
     }
 
 	@Test
-	@Disabled
 	void createAccount_using_admin_should_return_201() {
         String url = "/accounts";
         // use a unique number to avoid conflicts
@@ -107,12 +102,19 @@ class AccountClientTests {
 	@Test
 	void createAccount_using_user_should_return_403() {
 
-
+        String url = "/accounts";
+        // use a unique number to avoid conflicts
+        String number = "12345%4d".formatted(random.nextInt(10000));
+        Account account = new Account(number, "John Doe");
+        account.addBeneficiary("Jane Doe");
+        ResponseEntity<Void> responseEntity
+                = restTemplate.withBasicAuth("user", "user")
+                .postForEntity(url, account, Void.class);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 
     }
 
 	@Test
-	@Disabled
 	void addAndDeleteBeneficiary_using_superadmin_should_succeed() {
         // perform both add and delete to avoid issues with side effects
         String addUrl = "/accounts/{accountId}/beneficiaries";

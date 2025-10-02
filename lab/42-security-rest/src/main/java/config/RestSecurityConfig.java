@@ -4,6 +4,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.core.userdetails.User;
@@ -15,7 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 // TODO-10: Enable method security
 // - Add @EnableMethodSecurity annotation to this class
-
+@EnableMethodSecurity
 @Configuration
 public class RestSecurityConfig {
 
@@ -24,7 +26,14 @@ public class RestSecurityConfig {
 
 		// @formatter:off
         http.authorizeHttpRequests((authz) -> authz
-                // TODO-04: Configure authorization using requestMatchers method
+						.requestMatchers(HttpMethod.DELETE, "/accounts/**").hasRole("SUPERADMIN")
+						.requestMatchers(HttpMethod.POST, "/accounts/**").hasAnyRole("ADMIN","SUPERADMIN")
+						.requestMatchers(HttpMethod.PUT, "/accounts/**").hasAnyRole("ADMIN","SUPERADMIN")
+						.requestMatchers(HttpMethod.GET, "/accounts/**").hasAnyRole("USER","ADMIN","SUPERADMIN")
+						.requestMatchers(HttpMethod.GET, "/authorities").hasAnyRole("USER","ADMIN","SUPERADMIN")
+
+
+						// TODO-04: Configure authorization using requestMatchers method
                 // - Allow DELETE on the /accounts resource (or any sub-resource)
                 //   for "SUPERADMIN" role only
                 // - Allow POST or PUT on the /accounts resource (or any sub-resource)
@@ -46,7 +55,6 @@ public class RestSecurityConfig {
 	// TODO-14b (Optional): Remove the InMemoryUserDetailsManager definition
 	// - Comment the @Bean annotation below
 	
-	@Bean
     public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder) {
 
 		// TODO-05: Add three users with corresponding roles:
@@ -55,9 +63,11 @@ public class RestSecurityConfig {
 		// - "superadmin"/"superadmin" with "USER", "ADMIN", and "SUPERADMIN" roles
 		// (Make sure to store the password in encoded form.)
     	// - pass all users in the InMemoryUserDetailsManager constructor
+		UserDetails admin = User.withUsername("admin").password(passwordEncoder.encode("admin")).roles("USER","ADMIN").build();
 		UserDetails user = User.withUsername("user").password(passwordEncoder.encode("user")).roles("USER").build();
+		UserDetails superadmin = User.withUsername("superadmin").password(passwordEncoder.encode("superadmin")).roles("USER","ADMIN","SUPERADMIN").build();
 
-		return new InMemoryUserDetailsManager(user /* Add new users comma-separated here */);
+		return new InMemoryUserDetailsManager(user, admin, superadmin /* Add new users comma-separated here */);
 	}
     
     @Bean
